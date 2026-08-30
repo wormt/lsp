@@ -444,4 +444,20 @@ export def FindNearestRootDir(startDir: string, files: list<any>): string
   return sortedList[0]
 enddef
 
+# returns true if rootPath (or its resolved form) matches an ignored path
+# in 'workspaceIgnoredPaths' option.
+export def IsIgnoredRoot(rootPath: string, ignoredPaths: list<string>): bool
+  var rootResolved: string = rootPath->resolve()->fnamemodify(':p')
+  for ignored in ignoredPaths
+    if ignored =~ '[*?[]'
+      if rootPath =~ glob2regpat(ignored) || rootResolved =~ glob2regpat(ignored)
+        return true
+      endif
+    elseif rootPath == ignored || rootResolved == ignored->resolve()->fnamemodify(':p')
+      return true
+    endif
+  endfor
+  return false
+enddef
+
 # vim: tabstop=8 shiftwidth=2 softtabstop=2 noexpandtab

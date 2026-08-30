@@ -177,21 +177,6 @@ def ServerInitReply(lspserver: dict<any>, initResult: dict<any>,
   endif
 enddef
 
-# returns true if rootPath (or its resolved form) matches an ignored path
-# in 'workspaceIgnoredPaths' option.
-def IsIgnoredRoot(rootPath: string, rootResolved: string): bool
-  for ignored in opt.lspOptions.workspaceIgnoredPaths
-    if ignored =~ '[*?[]'
-      if rootPath =~ glob2regpat(ignored) || rootResolved =~ glob2regpat(ignored)
-        return true
-      endif
-    elseif rootPath == ignored || rootResolved == ignored->resolve()->fnamemodify(':p')
-      return true
-    endif
-  endfor
-  return false
-enddef
-
 # Request: "initialize"
 # Param: InitializeParams
 def InitServer(lspserver: dict<any>, bnr: number)
@@ -226,7 +211,7 @@ def InitServer(lspserver: dict<any>, bnr: number)
 
   rootPath = rootPath->fnamemodify(':p')
 
-  if IsIgnoredRoot(rootPath, rootPath->resolve()->fnamemodify(':p'))
+  if util.IsIgnoredRoot(rootPath, opt.lspOptions.workspaceIgnoredPaths)
     rootPath = ''
   endif
 
