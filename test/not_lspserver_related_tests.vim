@@ -325,6 +325,7 @@ def g:Test_WorkspaceIgnoredPaths_GlobSymlink()
   var link: string = $'{tmpdir}/link'
   mkdir($'{real}/.cargo/registry/src/index', 'p')
   system($'ln -s {shellescape(real)} {shellescape(link)}')
+  assert_equal(0, v:shell_error)
   var ignored: list<string> = [$'{link}/.cargo/**']
   var root: string = $'{real}/.cargo/registry/src/index/package'
   try
