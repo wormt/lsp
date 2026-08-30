@@ -449,10 +449,17 @@ enddef
 export def IsIgnoredRoot(rootPath: string, ignoredPaths: list<string>): bool
   var rootResolved: string = rootPath->resolve()->fnamemodify(':p')
   for ignored in ignoredPaths
-    if ignored =~ '[*?[]'
-      if rootPath =~ glob2regpat(ignored) || rootResolved =~ glob2regpat(ignored)
-        return true
-      endif
+    var globpos: number = ignored->match('[*?[]')
+    if globpos != -1
+      # Resolve only the path prefix. if slice part of ignored path, then true
+      var resolvedPattern: string =
+	$'{ignored[0 : globpos - 1]->resolve()->fnamemodify(':p')}{ignored[globpos : ]}'
+      for pattern in [ignored, resolvedPattern]
+        var patternRegexp: string = glob2regpat(pattern)
+        if rootPath =~ patternRegexp || rootResolved =~ patternRegexp
+          return true
+        endif
+      endfor
     elseif rootPath == ignored || rootResolved == ignored->resolve()->fnamemodify(':p')
       return true
     endif
